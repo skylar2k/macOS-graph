@@ -2,7 +2,7 @@ import argparse
 
 import pytest
 
-from kd_graph import safety
+from graph_macos.cli.utils import safety
 
 
 def parse(*argv):

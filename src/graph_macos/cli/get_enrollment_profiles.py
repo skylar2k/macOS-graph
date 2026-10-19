@@ -1,7 +1,7 @@
 import argparse
 
 from ..graph import API_VERSION, Graph
-from ..pipe import collect_ids, emit, entrypoint, setup_logging
+from .utils.pipe import collect_ids, emit, entrypoint, setup_logging
 
 SCOPES = ["DeviceManagementServiceConfig.Read.All"]
 
@@ -12,7 +12,7 @@ def main() -> int:
         description=(
             "List enrollment profiles for one or more ADE tokens as NDJSON. Token ids "
             "come from the arguments, or from stdin (e.g. the output of "
-            "kd-get-ade-tokens). Each profile is tagged with its depOnboardingSettingId."
+            "get-ade-tokens). Each profile is tagged with its depOnboardingSettingId."
         )
     )
     p.add_argument(

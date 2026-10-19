@@ -10,21 +10,16 @@ from msal_extensions import (
     build_encrypted_persistence,
 )
 
-from .errors import KdGraphError
+from ..errors import GraphMacosError
 
 log = logging.getLogger(__name__)
 
-CACHE_PATH: Final[Path] = Path.home() / ".cache" / "kd_graph" / "token_cache.bin"
-ALLOW_PLAINTEXT_ENV: Final = "KD_GRAPH_ALLOW_PLAINTEXT_CACHE"
+CACHE_PATH: Final[Path] = Path.home() / ".cache" / "graph_macos" / "token_cache.bin"
+ALLOW_PLAINTEXT_ENV: Final = "GRAPH_MACOS_ALLOW_PLAINTEXT_CACHE"
 
 
-class AuthError(KdGraphError):
+class AuthError(GraphMacosError):
     pass
-
-
-def _env(*names: str) -> str | None:
-    """First set environment variable; prefixed names first, legacy names after."""
-    return next((v for n in names if (v := os.environ.get(n))), None)
 
 
 def _build_cache() -> PersistedTokenCache:
@@ -46,15 +41,15 @@ def _build_cache() -> PersistedTokenCache:
 class GraphAuth:
     """Delegated, interactive sign-in with a persistent token cache.
 
-    Configuration: KD_GRAPH_CLIENT_ID, KD_GRAPH_TENANT_ID and optionally
-    KD_GRAPH_UPN (login hint). CLIENT_ID / TENANT_ID are accepted as legacy names.
+    Configuration: GRAPH_MACOS_CLIENT_ID, GRAPH_MACOS_TENANT_ID and optionally
+    GRAPH_MACOS_UPN (login hint).
     """
 
     def __init__(self, client_id: str | None = None, tenant_id: str | None = None):
-        client_id = client_id or _env("KD_GRAPH_CLIENT_ID", "CLIENT_ID")
-        tenant_id = tenant_id or _env("KD_GRAPH_TENANT_ID", "TENANT_ID")
+        client_id = client_id or os.environ.get("GRAPH_MACOS_CLIENT_ID")
+        tenant_id = tenant_id or os.environ.get("GRAPH_MACOS_TENANT_ID")
         if not client_id or not tenant_id:
-            raise AuthError("set KD_GRAPH_CLIENT_ID and KD_GRAPH_TENANT_ID")
+            raise AuthError("set GRAPH_MACOS_CLIENT_ID and GRAPH_MACOS_TENANT_ID")
         self.app = msal.PublicClientApplication(
             client_id,
             authority=f"https://login.microsoftonline.com/{tenant_id}",
@@ -62,7 +57,7 @@ class GraphAuth:
         )
 
     def get_token(self, scopes: list[str], login_hint: str | None = None) -> str:
-        login_hint = login_hint or os.environ.get("KD_GRAPH_UPN")
+        login_hint = login_hint or os.environ.get("GRAPH_MACOS_UPN")
         result = None
 
         if accounts := self.app.get_accounts(username=login_hint):

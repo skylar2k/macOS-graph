@@ -1,9 +1,9 @@
 import argparse
 import logging
 
-from .. import safety
 from ..graph import API_VERSION, Graph, batch_error
-from ..pipe import collect_ids, emit, entrypoint, setup_logging
+from .utils import safety
+from .utils.pipe import collect_ids, emit, entrypoint, setup_logging
 
 log = logging.getLogger("delete_devices")
 

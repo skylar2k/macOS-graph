@@ -1,7 +1,7 @@
 import argparse
 
 from ..graph import API_VERSION, Graph
-from ..pipe import emit, entrypoint, setup_logging
+from .utils.pipe import emit, entrypoint, setup_logging
 
 SCOPES = ["DeviceManagementManagedDevices.Read.All"]
 DEFAULT_SELECT = (

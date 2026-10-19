@@ -3,7 +3,7 @@ from unittest import mock
 import pytest
 import requests
 
-from kd_graph.graph import Graph, GraphError, _retry_delay, batch_error
+from graph_macos.graph.client import Graph, GraphError, _retry_delay, batch_error
 
 
 class FakeAuth:

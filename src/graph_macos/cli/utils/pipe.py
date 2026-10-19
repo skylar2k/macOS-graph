@@ -12,7 +12,7 @@ import sys
 from collections.abc import Callable, Iterable, Iterator, Sequence
 from typing import Any, TextIO
 
-from .errors import KdGraphError
+from ...errors import GraphMacosError
 
 
 def setup_logging(verbose: bool = False) -> None:
@@ -96,7 +96,7 @@ def entrypoint(main: Callable[[], int | None]) -> Callable[[], None]:
     def wrapper() -> None:
         try:
             sys.exit(main() or 0)
-        except KdGraphError as e:
+        except GraphMacosError as e:
             print(f"error: {e}", file=sys.stderr)
             sys.exit(1)
         except BrokenPipeError:

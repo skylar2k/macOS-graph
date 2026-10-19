@@ -8,3 +8,4 @@ wheels/
 .pytest_cache/
 .ruff_cache/
 .zed/
+.DS_Store

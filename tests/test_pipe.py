@@ -2,7 +2,7 @@ import io
 
 import pytest
 
-from kd_graph.pipe import collect_ids, emit, read_ids
+from graph_macos.cli.utils.pipe import collect_ids, emit, read_ids
 
 
 def stream(text: str) -> io.StringIO:

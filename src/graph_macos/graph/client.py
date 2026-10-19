@@ -8,8 +8,8 @@ from typing import Any
 
 import requests
 
+from ..errors import GraphMacosError
 from .auth import GraphAuth
-from .errors import KdGraphError
 
 BATCH_LIMIT = 20  # Graph's maximum sub-requests per /$batch call
 MAX_ATTEMPTS = 6
@@ -23,7 +23,7 @@ class API_VERSION(StrEnum):
     BETA = "beta"
 
 
-class GraphError(KdGraphError):
+class GraphError(GraphMacosError):
     """A non-retryable (or retries exhausted) Graph failure, with Graph's own message."""
 
     def __init__(self, status: int, message: str, url: str = ""):
@@ -50,7 +50,7 @@ def _retry_delay(retry_after: str | None, attempt: int) -> float:
         except ValueError:
             try:
                 delay = parsedate_to_datetime(retry_after).timestamp() - time.time()
-            except (TypeError, ValueError):
+            except TypeError, ValueError:
                 delay = 0.0
         if delay > 0:
             return min(delay, MAX_WAIT)
@@ -86,7 +86,7 @@ class Graph:
             try:
                 # Fetched per attempt: a long backoff can outlive the access token.
                 r = self.session.request(method, url, headers=self._headers(), **kw)
-            except (requests.ConnectionError, requests.Timeout):
+            except requests.ConnectionError, requests.Timeout:
                 if method.upper() not in IDEMPOTENT or last:
                     raise
                 time.sleep(_retry_delay(None, attempt))
@@ -118,7 +118,7 @@ class Graph:
         response is {"id", "status", "headers", "body"}; a failed sub-request does
         not raise, so check "status"; `batch_error()` extracts the message.
         """
-        for chunk in itertools.batched(requests_, BATCH_LIMIT):
+        for chunk in itertools.batched(requests_, BATCH_LIMIT, strict=False):
             pending = {str(i): {**req, "id": str(i)} for i, req in enumerate(chunk)}
             done: dict[str, dict] = {}
             for attempt in range(MAX_ATTEMPTS):
