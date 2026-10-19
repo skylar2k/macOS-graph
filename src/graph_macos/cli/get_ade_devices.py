@@ -1,7 +1,7 @@
 import argparse
 
 from ..graph import API_VERSION, Graph
-from ..graph.ids import profile_guid, quote_id
+from ..graph.ids import quote_id
 from .utils.pipe import collect_ids, emit, entrypoint, setup_logging
 
 SCOPES = ["DeviceManagementServiceConfig.Read.All"]
@@ -13,9 +13,7 @@ def main() -> int:
         description=(
             "List imported ADE devices from Apple for one or more ADE tokens as NDJSON. "
             "Token ids come from the arguments, or from stdin (e.g. the output of "
-            "get-ade-tokens). Each device is tagged with its depOnboardingSettingId and, "
-            "when it has a profile, requestedProfileId (the bare GUID of "
-            "requestedEnrollmentProfileId, comparable to get-enrollment-profiles' profileId)."
+            "get-ade-tokens)."
         )
     )
     p.add_argument(
