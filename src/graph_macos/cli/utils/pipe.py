@@ -77,12 +77,26 @@ def read_ids(key: str = "id", stream: TextIO | None = None) -> Iterator[str]:
             yield str(rec)
 
 
+def clean_id(value: str) -> str:
+    """Trim whitespace and unwrap a JSON string, e.g. the `"abc"` that `jq .id` prints
+    (without -r) when captured with $(...)."""
+    value = value.strip()
+    if len(value) >= 2 and value[0] == value[-1] == '"':
+        try:
+            decoded = json.loads(value)
+        except json.JSONDecodeError:
+            return value
+        if isinstance(decoded, str):
+            return decoded.strip()
+    return value
+
+
 def collect_ids(cli_ids: Sequence[str] = (), key: str = "id") -> list[str]:
     """Ids from the command line if given, otherwise from stdin; de-duplicated, order kept.
 
     Typical use: `p.add_argument("ids", nargs="*")` then `collect_ids(args.ids)`.
     """
-    ids = cli_ids or read_ids(key)
+    ids = [clean_id(i) for i in cli_ids] or read_ids(key)
     return list(dict.fromkeys(ids))
 
 

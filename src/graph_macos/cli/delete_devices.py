@@ -2,6 +2,7 @@ import argparse
 import logging
 
 from ..graph import API_VERSION, Graph, batch_error
+from ..graph.ids import quote_id
 from .utils import safety
 from .utils.pipe import collect_ids, emit, entrypoint, setup_logging
 
@@ -33,7 +34,7 @@ def main() -> int:
     g = Graph(scopes=SCOPES, api_ver=API_VERSION.V1)
     failed = 0
     responses = g.batch(
-        {"method": "DELETE", "url": f"/deviceManagement/managedDevices/{i}"} for i in ids
+        {"method": "DELETE", "url": f"/deviceManagement/managedDevices/{quote_id(i)}"} for i in ids
     )
     for device_id, resp in zip(ids, responses, strict=True):
         ok = resp["status"] in (200, 204)

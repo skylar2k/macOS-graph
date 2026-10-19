@@ -1,7 +1,7 @@
 [project]
 name = "graph-macos"
 version = "0.1.0"
-description = "Pipe-friendly Microsoft Graph / Intune command-line tools for managing macOS devices"
+description = "Pipe-friendly Microsoft Graph / Intune command-line tools for macOS"
 readme = "README.md"
 requires-python = ">=3.15"
 dependencies = [
@@ -15,6 +15,7 @@ gmac-get-devices = "graph_macos.cli.get_devices:main"
 gmac-delete-devices = "graph_macos.cli.delete_devices:main"
 gmac-disabled-users = "graph_macos.cli.disabled_users:main"
 gmac-get-ade-tokens = "graph_macos.cli.get_ade_tokens:main"
+gmac-get-ade-devices = "graph_macos.cli.get_ade_devices:main"
 gmac-get-enrollment-profiles = "graph_macos.cli.get_enrollment_profiles:main"
 gmac-assign-enrollment-profile = "graph_macos.cli.assign_enrollment_profile:main"
 

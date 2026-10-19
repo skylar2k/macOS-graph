@@ -33,3 +33,12 @@ def test_failed_chunk_does_not_stop_others():
         ("c", "assigned"),
     ]
     assert "bad serial" in out[0]["error"]
+
+
+def test_ids_are_url_encoded():
+    g = FakeGraph()
+    list(assign(g, "t/../x", "p?q", ["a"], 10))
+    assert g.calls[0][1] == (
+        "/deviceManagement/depOnboardingSettings/t%2F..%2Fx/enrollmentProfiles/p%3Fq"
+        "/updateDeviceProfileAssignment"
+    )

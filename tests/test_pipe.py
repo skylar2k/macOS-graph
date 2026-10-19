@@ -40,3 +40,12 @@ def test_collect_ids_prefers_cli_and_dedupes():
 def test_emit_uses_current_stdout(capsys):
     emit({"a": "æ"})
     assert capsys.readouterr().out == '{"a":"æ"}\n'
+
+
+def test_quoted_cli_ids_from_jq_without_r_are_unwrapped():
+    from graph_macos.cli.utils.pipe import clean_id
+
+    assert collect_ids(['"abc"', ' "def"\n']) == ["abc", "def"]
+    assert clean_id("abc") == "abc"
+    assert clean_id('"a b"') == "a b"
+    assert clean_id('"broken') == '"broken'

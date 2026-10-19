@@ -22,14 +22,15 @@ uv sync && uv run gmac-get-devices
 
 Each command requests only the Graph scopes it needs (declared as `SCOPES` in its module).
 
-| Command                          | Scope                                         | Does                                                                     |
-| -------------------------------- | --------------------------------------------- | ------------------------------------------------------------------------ |
-| `gmac-get-devices`               | `DeviceManagementManagedDevices.Read.All`     | List managed devices (macOS by default)                                  |
-| `gmac-delete-devices`            | `…ManagedDevices.ReadWrite.All`               | Delete devices, **dry run unless `--yes`**                               |
-| `gmac-get-ade-tokens`            | `DeviceManagementServiceConfig.Read.All`      | List ADE tokens                                                          |
-| `gmac-get-enrollment-profiles`   | `DeviceManagementServiceConfig.Read.All`      | List enrollment profiles per token                                       |
-| `gmac-assign-enrollment-profile` | `DeviceManagementServiceConfig.ReadWrite.All` | Assign a profile to devices by serial number, **dry run unless `--yes`** |
-| `gmac-disabled-users`            | `User.Read.All`                               | List disabled users                                                      |
+| Command                          | Scope                                          | Does                                                                     |
+| -------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------ |
+| `gmac-get-devices`               | `DeviceManagementManagedDevices.Read.All`      | List managed devices (macOS by default)                                  |
+| `gmac-delete-devices`            | `DeviceManagementManagedDevices.ReadWrite.All` | Delete devices, **dry run unless `--yes`**                               |
+| `gmac-get-ade-tokens`            | `DeviceManagementServiceConfig.Read.All`       | List ADE tokens                                                          |
+| `gmac-get-ade-devices`           | `DeviceManagementServiceConfig.Read.All`       | List imported ADE devices                                                |
+| `gmac-get-enrollment-profiles`   | `DeviceManagementServiceConfig.Read.All`       | List enrollment profiles per token                                       |
+| `gmac-assign-enrollment-profile` | `DeviceManagementServiceConfig.ReadWrite.All`  | Assign a profile to devices by serial number, **dry run unless `--yes`** |
+| `gmac-disabled-users`            | `User.Read.All`                                | List disabled users                                                      |
 
 ## Pipe conventions
 

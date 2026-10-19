@@ -1,6 +1,7 @@
 import argparse
 
 from ..graph import API_VERSION, Graph
+from ..graph.ids import profile_guid, quote_id
 from .utils.pipe import collect_ids, emit, entrypoint, setup_logging
 
 SCOPES = ["DeviceManagementServiceConfig.Read.All"]
@@ -12,7 +13,7 @@ def main() -> int:
         description=(
             "List enrollment profiles for one or more ADE tokens as NDJSON. Token ids "
             "come from the arguments, or from stdin (e.g. the output of "
-            "get-ade-tokens). Each profile is tagged with its depOnboardingSettingId."
+            "get-ade-tokens). Each profile is tagged its bare profileId"
         )
     )
     p.add_argument(
@@ -25,9 +26,14 @@ def main() -> int:
     g = Graph(scopes=SCOPES, api_ver=API_VERSION.BETA)
     for token_id in collect_ids(args.ids):
         for profile in g.paged(
-            f"/deviceManagement/depOnboardingSettings/{token_id}/enrollmentProfiles"
+            f"/deviceManagement/depOnboardingSettings/{quote_id(token_id)}/enrollmentProfiles"
         ):
-            emit({**profile, "depOnboardingSettingId": token_id})
+            emit(
+                {
+                    **profile,
+                    "profileId": profile_guid(profile["id"]),
+                }
+            )
     return 0
 
 
