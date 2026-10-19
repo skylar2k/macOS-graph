@@ -3,7 +3,8 @@ from unittest import mock
 import pytest
 import requests
 
-from graph_macos.graph.client import Graph, GraphError, _retry_delay, batch_error
+from graph_macos.graph.api import batch_error
+from graph_macos.graph.client import Graph, GraphError, _retry_delay
 
 
 class FakeAuth:
@@ -82,7 +83,7 @@ def test_retry_after_is_capped_and_http_date_tolerated():
     assert _retry_delay("Wed, 21 Oct 2015 07:28:00 GMT", 0) <= 2
 
 
-def test_batch_chunks_orders_and_retries_throttled_items():
+def test_batch_chunks_orders_and_retries_throttled_items(monkeypatch):
     calls = []
 
     def post(url, json):
@@ -94,7 +95,7 @@ def test_batch_chunks_orders_and_retries_throttled_items():
         return {"responses": out[::-1]}  # Graph may answer out of order
 
     g = Graph(["scope"], auth=FakeAuth())
-    g.post = post  # type: ignore[method-assign]
+    monkeypatch.setattr(g, "post", post)
     res = list(g.batch({"method": "DELETE", "url": f"/x/{i}"} for i in range(45)))
     assert calls == [20, 1, 20, 5]
     assert [r["id"] for r in res[:3]] == ["0", "1", "2"]
@@ -104,3 +105,17 @@ def test_batch_chunks_orders_and_retries_throttled_items():
 def test_batch_error_message():
     assert batch_error({"status": 404, "body": {"error": {"message": "gone"}}}) == "gone"
     assert batch_error({"status": 500}) == "500"
+
+
+def test_caller_headers_are_merged_with_auth_header(monkeypatch):
+    seen = {}
+
+    class Sess:
+        def request(self, method, url, headers, **kw):
+            seen.update(headers)
+            return Resp(200, body={})
+
+    g = Graph(["scope"], auth=FakeAuth())
+    monkeypatch.setattr(g, "session", Sess())
+    g.get("/users", headers={"ConsistencyLevel": "eventual"})
+    assert seen == {"Authorization": "Bearer token", "ConsistencyLevel": "eventual"}

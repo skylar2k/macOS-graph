@@ -3,12 +3,11 @@ import io
 import pytest
 
 from graph_macos.cli.utils.pipe import collect_ids, emit, read_ids
+from graph_macos.errors import GraphMacosError
 
 
 def stream(text: str) -> io.StringIO:
-    s = io.StringIO(text)
-    s.isatty = lambda: False  # type: ignore[method-assign]
-    return s
+    return io.StringIO(text)  # isatty() is False, like a pipe
 
 
 @pytest.mark.parametrize(
@@ -29,7 +28,7 @@ def test_bare_ids_that_look_numeric_or_uuid_like():
 
 
 def test_missing_key_exits():
-    with pytest.raises(SystemExit):
+    with pytest.raises(GraphMacosError):
         list(read_ids(stream=stream('{"x":1}')))
 
 

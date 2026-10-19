@@ -3,12 +3,12 @@ import random
 import time
 from collections.abc import Iterable, Iterator
 from email.utils import parsedate_to_datetime
-from enum import StrEnum
-from typing import Any
+from typing import Any, Protocol
 
 import requests
 
 from ..errors import GraphMacosError
+from .api import API_VERSION, error_message
 from .auth import GraphAuth
 
 BATCH_LIMIT = 20  # Graph's maximum sub-requests per /$batch call
@@ -18,28 +18,12 @@ RETRY_STATUS = frozenset({429, 502, 503, 504})
 IDEMPOTENT = frozenset({"GET", "HEAD", "PUT", "DELETE", "OPTIONS"})
 
 
-class API_VERSION(StrEnum):
-    V1 = "v1.0"
-    BETA = "beta"
-
-
 class GraphError(GraphMacosError):
     """A non-retryable (or retries exhausted) Graph failure, with Graph's own message."""
 
     def __init__(self, status: int, message: str, url: str = ""):
         super().__init__(f"{status} {message}" + (f" ({url})" if url else ""))
         self.status = status
-
-
-def _error_message(body: Any, default: str) -> str:
-    if isinstance(body, dict) and isinstance(body.get("error"), dict):
-        return body["error"].get("message") or default
-    return default
-
-
-def batch_error(resp: dict) -> str:
-    """Human-readable message for a failed /$batch sub-response."""
-    return _error_message(resp.get("body"), str(resp["status"]))
 
 
 def _retry_delay(retry_after: str | None, attempt: int) -> float:
@@ -57,13 +41,19 @@ def _retry_delay(retry_after: str | None, attempt: int) -> float:
     return min(random.uniform(0, 2 ** (attempt + 1)), MAX_WAIT)
 
 
+class TokenProvider(Protocol):
+    """Anything that can supply a bearer token for a set of scopes (GraphAuth, or a test fake)."""
+
+    def get_token(self, scopes: list[str]) -> str: ...
+
+
 class Graph:
     """Thin Graph client. `scopes` is required: each caller asks only for what it needs."""
 
     def __init__(
         self,
         scopes: list[str],
-        auth: GraphAuth | None = None,
+        auth: TokenProvider | None = None,
         api_ver: API_VERSION = API_VERSION.V1,
     ):
         self.scopes = scopes
@@ -81,11 +71,14 @@ class Graph:
         if not url.startswith("https"):
             url = self.base + url
         kw.setdefault("timeout", 60)
+        extra_headers = kw.pop("headers", None) or {}
         for attempt in range(MAX_ATTEMPTS):
             last = attempt == MAX_ATTEMPTS - 1
             try:
                 # Fetched per attempt: a long backoff can outlive the access token.
-                r = self.session.request(method, url, headers=self._headers(), **kw)
+                r = self.session.request(
+                    method, url, headers={**self._headers(), **extra_headers}, **kw
+                )
             except requests.ConnectionError, requests.Timeout:
                 if method.upper() not in IDEMPOTENT or last:
                     raise
@@ -99,7 +92,7 @@ class Graph:
                     body = r.json()
                 except ValueError:
                     body = None
-                raise GraphError(r.status_code, _error_message(body, r.reason or ""), url)
+                raise GraphError(r.status_code, error_message(body, r.reason or ""), url)
             return r
         raise AssertionError("unreachable")
 

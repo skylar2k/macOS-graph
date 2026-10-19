@@ -42,7 +42,7 @@ def read_records(stream: TextIO | None = None) -> Iterator[Any]:
     """
     stream = stream or sys.stdin
     if stream.isatty():
-        raise SystemExit("error: expected input on stdin (pipe something in)")
+        raise GraphMacosError("expected input on stdin (pipe something in)")
     text = stream.read()
 
     decoder = json.JSONDecoder()
@@ -71,7 +71,7 @@ def read_ids(key: str = "id", stream: TextIO | None = None) -> Iterator[str]:
     for n, rec in enumerate(read_records(stream), 1):
         if isinstance(rec, dict):
             if key not in rec:
-                raise SystemExit(f"error: record {n} has no {key!r} field")
+                raise GraphMacosError(f"record {n} has no {key!r} field")
             yield str(rec[key])
         else:
             yield str(rec)
