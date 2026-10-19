@@ -262,3 +262,19 @@ def test_unsupported_query_error_points_to_jq(monkeypatch, fake_graph):
     assert r.exit_code == 1 and "filter client-side with jq" in r.stderr
     r, _ = run("users", "list", "--search", '"displayName:a"')
     assert r.exit_code == 1 and "hint" not in r.stderr
+
+
+def test_ade_devices_are_tagged_with_their_token_but_profiles_are_not(fake_graph):
+    t2 = "11111111-1111-1111-1111-111111111111"
+    base_url = "/deviceManagement/depOnboardingSettings/{}/"
+    fake_graph(
+        pages={
+            base_url.format(TOK) + "importedAppleDeviceIdentities": [{"id": "d1"}],
+            base_url.format(t2) + "importedAppleDeviceIdentities": [{"id": "d2"}],
+            base_url.format(TOK) + "enrollmentProfiles": [{"id": FULL}],
+        }
+    )
+    r, out = run("ade", "devices", "list", TOK, t2)
+    assert out == [{"id": "d1", "tokenId": TOK}, {"id": "d2", "tokenId": t2}]
+    r, out = run("ade", "profiles", "list", TOK)
+    assert out == [{"id": FULL, "profileId": GUID}]  # token is already inside the id

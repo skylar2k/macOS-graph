@@ -43,8 +43,7 @@ DEVICES = Resource(
     help="Devices imported from Apple for an ADE token.",
     read_scopes=(READ_SCOPE,),
     api=API_VERSION.BETA,
-    parent=Parent("token"),
-    verbs=frozenset({"list"}),
+    parent=Parent("token", tag="tokenId"),
 )
 
 RESOURCES = (TOKENS, PROFILES, DEVICES)

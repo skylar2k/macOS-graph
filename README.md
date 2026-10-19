@@ -27,6 +27,7 @@ Run `gmac --help`, `gmac devices --help` and so on to explore.
 <!-- commands:start -->
 | Command | Scopes | Does |
 | --- | --- | --- |
+| `gmac ade devices get` | `DeviceManagementServiceConfig.Read.All` | Fetch ade devices by id (arguments or stdin) as NDJSON. |
 | `gmac ade devices list` | `DeviceManagementServiceConfig.Read.All` | List ade devices as NDJSON, one record per line. Token ids come from arguments or stdin. |
 | `gmac ade profiles assign` | `DeviceManagementServiceConfig.ReadWrite.All` | Assign an enrollment profile to devices by serial number. **Dry run unless `--yes`.** |
 | `gmac ade profiles get` | `DeviceManagementServiceConfig.Read.All` | Fetch ade profiles by id (arguments or stdin) as NDJSON. |
@@ -59,6 +60,8 @@ Run `gmac --help`, `gmac devices --help` and so on to explore.
   (`--key` to change the field) or as bare lines (`jq -r .id`). `jq` output with quotes (`jq .id`) works too.
 - Anything that changes something is a dry run unless `--yes`, and refuses more than `--max-items` (50) records.
 - Output is stripped of known secrets (e.g. `adminAccountPassword` on enrollment profiles).
+- ADE device records carry a `tokenId` field (Graph doesn't include it), so output from several
+  tokens can be merged and still tell you which token each device belongs to.
 
 ```bash
 gmac devices list \
